@@ -11,10 +11,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
 
-async def infrared_base(command, param, update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def infrared_base(command, params, update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f'executing infrared command: {command}')
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f'executing infrared command: {command}')
-    subprocess.call(['termux-infrared-transmit', '-f', param])
+    subprocess.call(['termux-infrared-transmit', '-f', *params])
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     for each in infrared:
         application.add_handler(CommandHandler(
             each['command'],
-            functools.partial(infrared_base, each['command'], each['param'])
+            functools.partial(infrared_base, each['command'], each['params'])
         ))
 
     application.run_polling()
