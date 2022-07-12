@@ -20,9 +20,12 @@ async def infrared_base(command, params, update: Update, context: ContextTypes.D
 
 
 async def group_base(command, commands, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f'executing group command: {command}')
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=f'executing group command: {command}')
+
     for each_command in commands:
-        params = [each for each in config.get('infrared') if each['command'] == each_command][0]['params']
-        await infrared_base(command, params, update, context)
+        infrared = [each for each in config.get('infrared') if each['command'] == each_command][0]
+        await infrared_base(infrared['command'], infrared['params'], update, context)
 
 
 def main():
