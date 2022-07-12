@@ -6,6 +6,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
 from myhome import logger, get_config
 
+config = get_config()
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
@@ -17,18 +19,27 @@ async def infrared_base(command, params, update: Update, context: ContextTypes.D
     subprocess.call(['termux-infrared-transmit', '-f', *params])
 
 
-def main():
-    config = get_config()
+async def group_base(command, commands, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    for each_command in commands:
+        params = [each for each in config.get('infrared') if each['command'] == each_command][0]['params']
+        await infrared_base(command, params, update, context)
 
+
+def main():
     application = ApplicationBuilder().token(config.get('token')).build()
 
     application.add_handler(CommandHandler('start', start))
 
-    infrared = config.get('infrared')
-    for each in infrared:
+    for each_infrared in config.get('infrared'):
+        application.add_handler(CommandHandler(
+            each_infrared['command'],
+            functools.partial(infrared_base, each_infrared['command'], each_infrared['params'])
+        ))
+
+    for each in config.get('group'):
         application.add_handler(CommandHandler(
             each['command'],
-            functools.partial(infrared_base, each['command'], each['params'])
+            functools.partial(group_base, each['command'], each['commands'])
         ))
 
     application.run_polling()
