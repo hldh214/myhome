@@ -46,7 +46,9 @@ def main():
     cron = Cron()
     logger.info('starting cron thread')
     threading.Thread(target=cron.run()).start()
-    application.add_handler(CommandHandler('cron_enable', lambda update, context: cron.enable()))
-    application.add_handler(CommandHandler('cron_disable', lambda update, context: cron.disable()))
+    application.add_handler(CommandHandler('cron_enable', lambda update, context: cron.enable(
+        functools.partial(logging_base, update=update, context=context))))
+    application.add_handler(CommandHandler('cron_disable', lambda update, context: cron.disable(
+        functools.partial(logging_base, update=update, context=context))))
 
     application.run_polling()
