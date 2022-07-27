@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0387f4e17d14c5622c739f2cc102aa64c67d2b00efe25d853a15fac1bb729070"
+            "sha256": "7ae48b2697ca506875766512bbdb7b8f430811d968430112ed727f42f1e69a84"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -29,7 +29,7 @@
                 "sha256:65e6574b6395498d371d045f2a8a7e4f7d50c6ad21ef7313d15b1c7cf20df1e3",
                 "sha256:ddc25a0ddd899de44d7f451f4375fb971887e65af51e41e5dcf681f59b8b2c9a"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "index": "pypi",
             "version": "==3.9.1"
         },
         "cachetools": {
@@ -128,14 +128,6 @@
                 "sha256:a86d6e1f5b1dc238b218b012df0aa79409667bb209e58da56d0b94704e712a97"
             ],
             "version": "==1.5.0"
-        },
-        "schedule": {
-            "hashes": [
-                "sha256:617adce8b4bf38c360b781297d59918fbebfb2878f1671d189f4f4af5d0567a4",
-                "sha256:e6ca13585e62c810e13a08682e0a6a8ad245372e376ba2b8679294f377dfc8e4"
-            ],
-            "index": "pypi",
-            "version": "==1.1.0"
         },
         "setuptools": {
             "hashes": [

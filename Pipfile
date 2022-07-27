@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 python-telegram-bot = "*"
 loguru = "*"
-schedule = "*"
+apscheduler = "*"
 
 [dev-packages]
 
