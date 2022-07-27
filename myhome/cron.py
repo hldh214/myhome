@@ -25,12 +25,12 @@ class Cron:
 
             schedule.run_pending()
 
-    def enable(self, logging_function=None):
+    async def enable(self, logging_function=None):
         if callable(logging_function):
-            logging_function('enabling cron')
+            await logging_function('enabling cron')
         self.enabled = True
 
-    def disable(self, logging_function=None):
+    async def disable(self, logging_function=None):
         if callable(logging_function):
-            logging_function('disabling cron')
+            await logging_function('disabling cron')
         self.enabled = False

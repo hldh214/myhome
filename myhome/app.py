@@ -14,11 +14,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def infrared_base(infrared, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_single_command(infrared, functools.partial(logging_base, update=update, context=context))
+    await run_single_command(infrared, functools.partial(logging_base, update=update, context=context))
 
 
 async def group_base(group, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_group_command(group, functools.partial(logging_base, update=update, context=context))
+    await run_group_command(group, functools.partial(logging_base, update=update, context=context))
 
 
 async def logging_base(message, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -33,12 +33,12 @@ def main():
 
     for each_infrared in config.get('infrared'):
         application.add_handler(CommandHandler(
-            each_infrared['command'], lambda update, context: infrared_base(each_infrared, update, context)
+            each_infrared['command'], functools.partial(infrared_base, each_infrared)
         ))
 
     for each in config.get('group'):
         application.add_handler(CommandHandler(
-            each['command'], lambda update, context: group_base(each, update, context)
+            each['command'], functools.partial(group_base, each)
         ))
 
     cron = Cron()
