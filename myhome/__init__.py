@@ -12,6 +12,8 @@ def get_config(path='config.json'):
         return json.load(f)
 
 
+config = get_config()
+
 logger.remove()
 logger.add(project_root.joinpath('loguru.log'))
 logger.add(sys.stdout, colorize=True)

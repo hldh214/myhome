@@ -1,31 +1,29 @@
 import functools
-import subprocess
+import threading
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
-from myhome import logger, get_config
-
-config = get_config()
+from myhome import logger, config
+from myhome.core import run_single_command, run_group_command
+from myhome.cron import Cron
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
 
-async def infrared_base(command, params, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f'executing infrared command: {command}')
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=f'executing infrared command: {command}')
-    subprocess.call(['termux-infrared-transmit', '-f', *params])
+async def infrared_base(command, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    run_single_command(command, functools.partial(logging_base, update=update, context=context))
 
 
-async def group_base(command, commands, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f'executing group command: {command}')
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=f'executing group command: {command}')
+async def group_base(command, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    run_group_command(command, functools.partial(logging_base, update=update, context=context))
 
-    for each_command in commands:
-        infrared = [each for each in config.get('infrared') if each['command'] == each_command][0]
-        await infrared_base(infrared['command'], infrared['params'], update, context)
+
+async def logging_base(message, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(message)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 
 def main():
@@ -36,13 +34,19 @@ def main():
     for each_infrared in config.get('infrared'):
         application.add_handler(CommandHandler(
             each_infrared['command'],
-            functools.partial(infrared_base, each_infrared['command'], each_infrared['params'])
+            lambda update, context: infrared_base(each_infrared['command'], update, context)
         ))
 
     for each in config.get('group'):
         application.add_handler(CommandHandler(
             each['command'],
-            functools.partial(group_base, each['command'], each['commands'])
+            lambda update, context: group_base(each['command'], update, context)
         ))
+
+    cron = Cron()
+    logger.info('starting cron thread')
+    threading.Thread(target=cron.run()).start()
+    application.add_handler(CommandHandler('cron_enable', lambda update, context: cron.enable()))
+    application.add_handler(CommandHandler('cron_disable', lambda update, context: cron.disable()))
 
     application.run_polling()
