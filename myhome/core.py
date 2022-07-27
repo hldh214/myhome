@@ -8,7 +8,7 @@ async def run_group_command(group, logging_function=None):
         await logging_function(f'executing group command: {group.get("command")}')
     for each_command in group['commands']:
         infrared = [each for each in config.get('infrared') if each['command'] == each_command][0]
-        await run_single_command(infrared)
+        await run_single_command(infrared, logging_function)
 
 
 async def run_single_command(infrared, logging_function=None):
