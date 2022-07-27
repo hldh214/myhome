@@ -1,4 +1,3 @@
-import asyncio
 import functools
 
 from telegram import Update
@@ -13,19 +12,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
 
-def infrared_base(infrared, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_single_command(infrared, functools.partial(logging_base, update=update, context=context))
+async def infrared_base(infrared, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await run_single_command(infrared, functools.partial(logging_base, update=update, context=context))
 
 
-def group_base(group, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_group_command(group, functools.partial(logging_base, update=update, context=context))
+async def group_base(group, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await run_group_command(group, functools.partial(logging_base, update=update, context=context))
 
 
-def logging_base(message, update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def logging_base(message, update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(message)
-    asyncio.run(context.bot.send_message(chat_id=update.effective_chat.id, text=message))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 
+# noinspection PyTypeChecker
 def main():
     application = ApplicationBuilder().token(config.get('token')).build()
 

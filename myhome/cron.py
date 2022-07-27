@@ -1,4 +1,4 @@
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from myhome import config, logger
 from myhome.core import run_group_command, run_single_command
@@ -6,7 +6,7 @@ from myhome.core import run_group_command, run_single_command
 
 class Cron:
     def __init__(self):
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = AsyncIOScheduler()
         self.scheduler.start()
 
     def run(self):
@@ -28,12 +28,12 @@ class Cron:
                     minute=each_schedule['minute']
                 )
 
-    def enable(self, logging_function=None):
+    async def enable(self, logging_function=None):
         if callable(logging_function):
-            logging_function('enabling cron')
+            await logging_function('enabling cron')
         self.scheduler.resume()
 
-    def disable(self, logging_function=None):
+    async def disable(self, logging_function=None):
         if callable(logging_function):
-            logging_function('disabling cron')
+            await logging_function('disabling cron')
         self.scheduler.pause()
