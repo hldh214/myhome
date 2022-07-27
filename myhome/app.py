@@ -13,12 +13,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
 
-async def infrared_base(command, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_single_command(command, functools.partial(logging_base, update=update, context=context))
+async def infrared_base(infrared, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    run_single_command(infrared, functools.partial(logging_base, update=update, context=context))
 
 
-async def group_base(command, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    run_group_command(command, functools.partial(logging_base, update=update, context=context))
+async def group_base(group, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    run_group_command(group, functools.partial(logging_base, update=update, context=context))
 
 
 async def logging_base(message, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -33,19 +33,19 @@ def main():
 
     for each_infrared in config.get('infrared'):
         application.add_handler(CommandHandler(
-            each_infrared['command'],
-            lambda update, context: infrared_base(each_infrared['command'], update, context)
+            each_infrared['command'], lambda update, context: infrared_base(each_infrared, update, context)
         ))
 
     for each in config.get('group'):
         application.add_handler(CommandHandler(
-            each['command'],
-            lambda update, context: group_base(each['command'], update, context)
+            each['command'], lambda update, context: group_base(each, update, context)
         ))
 
     cron = Cron()
     logger.info('starting cron thread')
-    threading.Thread(target=cron.run()).start()
+    cron_thread = threading.Thread(target=cron.run)
+    cron_thread.daemon = True
+    cron_thread.start()
     application.add_handler(CommandHandler('cron_enable', lambda update, context: cron.enable(
         functools.partial(logging_base, update=update, context=context))))
     application.add_handler(CommandHandler('cron_disable', lambda update, context: cron.disable(
