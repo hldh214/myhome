@@ -1,4 +1,5 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.base import STATE_RUNNING
 
 from myhome import config, logger
 from myhome.core import run_group_command, run_single_command
@@ -27,6 +28,9 @@ class Cron:
                     hour=each_schedule['hour'],
                     minute=each_schedule['minute']
                 )
+
+    def is_enabled(self):
+        return self.scheduler.state == STATE_RUNNING
 
     async def enable(self, logging_function=None):
         if callable(logging_function):
