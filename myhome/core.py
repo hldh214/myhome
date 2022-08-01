@@ -7,7 +7,7 @@ from myhome import config
 async def run_group_command(group, logging_function=None):
     if callable(logging_function):
         log_message = f'executing group command: {group.get("command")}'
-        if inspect.isawaitable(logging_function):
+        if inspect.iscoroutinefunction(logging_function):
             await logging_function(log_message)
         else:
             logging_function(log_message)
@@ -20,7 +20,7 @@ async def run_group_command(group, logging_function=None):
 async def run_single_command(infrared, logging_function=None):
     if callable(logging_function):
         log_message = f'executing single command: {infrared.get("command")}'
-        if inspect.isawaitable(logging_function):
+        if inspect.iscoroutinefunction(logging_function):
             await logging_function(log_message)
         else:
             logging_function(log_message)
