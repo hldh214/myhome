@@ -1,6 +1,7 @@
 {
   "token": "",
   "username": "",
+  "chat_id": "",
   "infrared": [
     {
       "name": "open A/C with cool 25 degree",
@@ -69,6 +70,14 @@
       "day_of_week": "mon-fri",
       "hour": 18,
       "minute": 8
+    },
+    {
+      "name": "Turn on A/C every weekday at 12:00",
+      "type": "single",
+      "command": "ac_on",
+      "day_of_week": "mon-fri",
+      "hour": 12,
+      "minute": 0
     }
   ]
 }

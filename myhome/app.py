@@ -1,9 +1,9 @@
 import functools
 
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
 
-from myhome import logger, config
+from myhome import logger, config, application
 from myhome.core import run_single_command, run_group_command
 from myhome.cron import Cron
 
@@ -57,8 +57,6 @@ def build_keyboard_button():
 
 # noinspection PyTypeChecker
 def main():
-    application = ApplicationBuilder().token(config.get('token')).build()
-
     application.add_handler(CommandHandler('start', start_handler, filters.User(username=config.get('username'))))
     application.add_handler(CommandHandler('menu', menu_handler, filters.User(username=config.get('username'))))
 
