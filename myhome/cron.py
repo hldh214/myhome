@@ -18,7 +18,8 @@ class Cron:
                     run_group_command, 'cron', (group, tgbot.send_message,),
                     day_of_week=each_schedule['day_of_week'],
                     hour=each_schedule['hour'],
-                    minute=each_schedule['minute']
+                    minute=each_schedule['minute'],
+                    misfire_grace_time=60
                 )
             elif each_schedule['type'] == 'single':
                 infrared = [each for each in config.get('infrared') if each['command'] == each_schedule['command']][0]
@@ -26,7 +27,8 @@ class Cron:
                     run_single_command, 'cron', (infrared, tgbot.send_message,),
                     day_of_week=each_schedule['day_of_week'],
                     hour=each_schedule['hour'],
-                    minute=each_schedule['minute']
+                    minute=each_schedule['minute'],
+                    misfire_grace_time=60
                 )
 
     def is_enabled(self):
