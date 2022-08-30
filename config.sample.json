@@ -56,15 +56,8 @@
   ],
   "schedule": [
     {
-      "name": "Turn on A/C every weekday at 18:00",
-      "type": "single",
-      "command": "ac_on",
-      "day_of_week": "mon-fri",
-      "hour": 18,
-      "minute": 0
-    },
-    {
       "name": "Turn on TV every weekday at 18:08",
+      "enabled": true,
       "type": "single",
       "command": "tv_channel_1",
       "day_of_week": "mon-fri",
@@ -72,7 +65,17 @@
       "minute": 8
     },
     {
+      "name": "Turn on A/C every weekday at 18:00",
+      "enabled": false,
+      "type": "single",
+      "command": "ac_on",
+      "day_of_week": "mon-fri",
+      "hour": 18,
+      "minute": 0
+    },
+    {
       "name": "Turn on A/C every weekday at 12:00",
+      "enabled": false,
       "type": "single",
       "command": "ac_on",
       "day_of_week": "mon-fri",

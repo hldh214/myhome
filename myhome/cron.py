@@ -12,6 +12,9 @@ class Cron:
 
     def run(self):
         for each_schedule in config.get('schedule'):
+            if not each_schedule['enabled']:
+                continue
+
             if each_schedule['type'] == 'group':
                 group = [each for each in config.get('group') if each['command'] == each_schedule['command']][0]
                 self.scheduler.add_job(
