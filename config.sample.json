@@ -5,6 +5,7 @@
   "monitor": {
     "enabled": true,
     "interval": 1,
+    "leave_home_count_down_max": 120,
     "ip_addr": "192.168.10.89",
     "on_commands": [
       {

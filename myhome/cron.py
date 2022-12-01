@@ -1,5 +1,3 @@
-import asyncio
-
 import ping3
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.base import STATE_RUNNING
@@ -9,9 +7,10 @@ import myhome.core
 
 
 class Cron:
-    at_home = True
-
     def __init__(self):
+        self.at_home = True
+        self.leave_home_count_down = 0
+        self.leave_home_count_down_max = myhome.config['monitor']['leave_home_count_down_max']
         self.scheduler = AsyncIOScheduler()
 
     def run(self):
@@ -43,7 +42,6 @@ class Cron:
         if ping3.ping(myhome.config['monitor']['ip_addr'], timeout=1):
             myhome.logger.info('back home')
             await self.back_home()
-            await asyncio.sleep(2 * 60)  # wait for 2 minutes then check again for leaving home
         else:
             myhome.logger.info('leave home')
             await self.leave_home()
@@ -51,6 +49,10 @@ class Cron:
     async def back_home(self):
         if self.at_home:
             # still at home
+            return
+
+        if self.leave_home_count_down > 0:
+            self.leave_home_count_down = 0
             return
 
         self.at_home = True
@@ -68,6 +70,10 @@ class Cron:
     async def leave_home(self):
         if not self.at_home:
             # still not at home
+            return
+
+        if self.leave_home_count_down < self.leave_home_count_down_max:
+            self.leave_home_count_down += 1
             return
 
         self.at_home = False
