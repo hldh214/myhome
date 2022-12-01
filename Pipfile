@@ -5,9 +5,10 @@ name = "pypi"
 
 [packages]
 python-telegram-bot = "==20.*"
-loguru = "*"
-apscheduler = "*"
-httpx = "*"
+loguru = "==0.6.*"
+apscheduler = "==3.9.*"
+httpx = "==0.23.*"
+ping3 = "==4.0.*"
 
 [dev-packages]
 

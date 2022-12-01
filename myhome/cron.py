@@ -1,38 +1,83 @@
+import time
+
+import ping3
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.base import STATE_RUNNING
 
-from myhome import config, tgbot
-from myhome.core import run_group_command, run_single_command
+import myhome.tgbot
+import myhome.core
 
 
 class Cron:
+    at_home = True
+
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
         self.scheduler.start()
 
     def run(self):
-        for each_schedule in config.get('schedule'):
+        if myhome.config['monitor']['enabled']:
+            self.scheduler.add_job(self.back_home_cron, 'interval', seconds=myhome.config['monitor']['interval'])
+
+        for each_schedule in myhome.config.get('schedule'):
             if not each_schedule['enabled']:
                 continue
 
             if each_schedule['type'] == 'group':
-                group = [each for each in config.get('group') if each['command'] == each_schedule['command']][0]
                 self.scheduler.add_job(
-                    run_group_command, 'cron', (group, tgbot.send_message,),
+                    myhome.core.run_group_command, 'cron', (each_schedule['command'], myhome.tgbot.send_message,),
                     day_of_week=each_schedule['day_of_week'],
                     hour=each_schedule['hour'],
-                    minute=each_schedule['minute'],
-                    misfire_grace_time=60
+                    minute=each_schedule['minute']
                 )
             elif each_schedule['type'] == 'single':
-                infrared = [each for each in config.get('infrared') if each['command'] == each_schedule['command']][0]
                 self.scheduler.add_job(
-                    run_single_command, 'cron', (infrared, tgbot.send_message,),
+                    myhome.core.run_single_command, 'cron', (each_schedule['command'], myhome.tgbot.send_message,),
                     day_of_week=each_schedule['day_of_week'],
                     hour=each_schedule['hour'],
-                    minute=each_schedule['minute'],
-                    misfire_grace_time=60
+                    minute=each_schedule['minute']
                 )
+
+    async def back_home_cron(self):
+        if ping3.ping(myhome.config['monitor']['ip_addr'], timeout=1):
+            self.back_home()
+            time.sleep(2 * 60)  # wait for 2 minutes then check again for leaving home
+        else:
+            self.leave_home()
+
+    def back_home(self):
+        if self.at_home:
+            # still at home
+            return
+
+        self.at_home = True
+        for each_schedule in myhome.config['monitor']['on_commands']:
+            if not each_schedule['enabled']:
+                continue
+
+            if each_schedule['type'] == 'group':
+                myhome.core.run_group_command(each_schedule['command'])
+            elif each_schedule['type'] == 'single':
+                myhome.core.run_single_command(each_schedule['command'])
+
+        return
+
+    def leave_home(self):
+        if not self.at_home:
+            # still not at home
+            return
+
+        self.at_home = False
+        for each_schedule in myhome.config['monitor']['off_commands']:
+            if not each_schedule['enabled']:
+                continue
+
+            if each_schedule['type'] == 'group':
+                myhome.core.run_group_command(each_schedule['command'])
+            elif each_schedule['type'] == 'single':
+                myhome.core.run_single_command(each_schedule['command'])
+
+        return
 
     def is_enabled(self):
         return self.scheduler.state == STATE_RUNNING

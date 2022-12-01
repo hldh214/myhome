@@ -49,7 +49,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def build_keyboard_button():
     buttons = [
         [KeyboardButton(CRON_DISABLE if cron.is_enabled() else CRON_ENABLE)],
-        [KeyboardButton(f"/{each_group['command']}") for each_group in config.get('group')]
+        [KeyboardButton(f"/{each_group['command']}") for each_group in config['infrared']['group']]
     ]
 
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
@@ -60,14 +60,14 @@ def main():
     application.add_handler(CommandHandler('start', start_handler, filters.User(username=config.get('username'))))
     application.add_handler(CommandHandler('menu', menu_handler, filters.User(username=config.get('username'))))
 
-    for each_infrared in config.get('infrared'):
+    for each_infrared in config['infrared']['single']:
         application.add_handler(CommandHandler(
             each_infrared['command'],
             functools.partial(infrared_base, each_infrared),
             filters.User(username=config.get('username'))
         ))
 
-    for each_group in config.get('group'):
+    for each_group in config['infrared']['group']:
         application.add_handler(CommandHandler(
             each_group['command'],
             functools.partial(group_base, each_group),
