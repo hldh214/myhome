@@ -40,12 +40,12 @@ class Cron:
 
     async def back_home_cron(self):
         if ping3.ping(myhome.config['monitor']['ip_addr'], timeout=1):
-            self.back_home()
+            await self.back_home()
             time.sleep(2 * 60)  # wait for 2 minutes then check again for leaving home
         else:
-            self.leave_home()
+            await self.leave_home()
 
-    def back_home(self):
+    async def back_home(self):
         if self.at_home:
             # still at home
             return
@@ -56,13 +56,13 @@ class Cron:
                 continue
 
             if each_schedule['type'] == 'group':
-                myhome.core.run_group_command(each_schedule['command'])
+                await myhome.core.run_group_command(each_schedule['command'])
             elif each_schedule['type'] == 'single':
-                myhome.core.run_single_command(each_schedule['command'])
+                await myhome.core.run_single_command(each_schedule['command'])
 
         return
 
-    def leave_home(self):
+    async def leave_home(self):
         if not self.at_home:
             # still not at home
             return
@@ -73,9 +73,9 @@ class Cron:
                 continue
 
             if each_schedule['type'] == 'group':
-                myhome.core.run_group_command(each_schedule['command'])
+                await myhome.core.run_group_command(each_schedule['command'])
             elif each_schedule['type'] == 'single':
-                myhome.core.run_single_command(each_schedule['command'])
+                await myhome.core.run_single_command(each_schedule['command'])
 
         return
 
