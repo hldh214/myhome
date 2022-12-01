@@ -40,10 +40,8 @@ class Cron:
 
     async def back_home_cron(self):
         if ping3.ping(myhome.config['monitor']['ip_addr'], timeout=1):
-            myhome.logger.info('back home')
             await self.back_home()
         else:
-            myhome.logger.info('leave home')
             await self.leave_home()
 
     async def back_home(self):
