@@ -57,28 +57,30 @@ def build_keyboard_button():
 
 # noinspection PyTypeChecker
 def main():
-    application.add_handler(CommandHandler('start', start_handler, filters.User(username=config.get('username'))))
-    application.add_handler(CommandHandler('menu', menu_handler, filters.User(username=config.get('username'))))
+    user_filter = filters.User(user_id=config.get('user_id'))
+
+    application.add_handler(CommandHandler('start', start_handler, user_filter))
+    application.add_handler(CommandHandler('menu', menu_handler, user_filter))
 
     for each_infrared in config['infrared']['single']:
         application.add_handler(CommandHandler(
             each_infrared['command'],
             functools.partial(infrared_base, each_infrared),
-            filters.User(username=config.get('username'))
+            filters.User(user_id=config.get('user_id'))
         ))
 
     for each_group in config['infrared']['group']:
         application.add_handler(CommandHandler(
             each_group['command'],
             functools.partial(group_base, each_group),
-            filters.User(username=config.get('username'))
+            filters.User(user_id=config.get('user_id'))
         ))
 
     logger.info('starting cron thread')
     cron.run()
 
     application.add_handler(MessageHandler(
-        filters.User(username=config.get('username')) & filters.Text(),
+        filters.User(user_id=config.get('user_id')) & filters.Text(),
         message_handler
     ))
 
