@@ -25,6 +25,7 @@ Java.perform(function () {
 # ./adb push ..\..\frida-server-16.0.6-android-arm\frida-server-16.0.6-android-arm '/data/local/tmp/'
 # chmod +x /data/local/tmp/frida-server-16.0.6-android-arm
 # /data/local/tmp/frida-server-16.0.6-android-arm
+# sshpass -p root ssh u0_a125@192.168.10.64 -p 8022
 
 # process = frida.get_usb_device().attach('遥控精灵')
 process = frida.get_usb_device().attach('遥控专家酷控')
