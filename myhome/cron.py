@@ -8,7 +8,7 @@ import myhome.core
 
 class Cron:
     def __init__(self):
-        self.at_home = True
+        self.presence = True
         self.leave_home_count_down = 0
         self.leave_home_count_down_max = myhome.config['monitor']['leave_home_count_down_max']
         self.scheduler = AsyncIOScheduler()
@@ -45,7 +45,7 @@ class Cron:
             await self.leave_home()
 
     async def back_home(self):
-        if self.at_home:
+        if self.presence:
             # still at home
             return
 
@@ -53,7 +53,7 @@ class Cron:
             self.leave_home_count_down = 0
             return
 
-        self.at_home = True
+        self.presence = True
         for each_schedule in myhome.config['monitor']['on_commands']:
             if not each_schedule['enabled']:
                 continue
@@ -66,7 +66,7 @@ class Cron:
         return
 
     async def leave_home(self):
-        if not self.at_home:
+        if not self.presence:
             # still not at home
             return
 
@@ -74,7 +74,7 @@ class Cron:
             self.leave_home_count_down += 1
             return
 
-        self.at_home = False
+        self.presence = False
         for each_schedule in myhome.config['monitor']['off_commands']:
             if not each_schedule['enabled']:
                 continue
