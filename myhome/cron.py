@@ -9,13 +9,14 @@ import myhome.core
 class Cron:
     def __init__(self):
         self.presence = True
-        self.leave_home_count_down = 0
-        self.leave_home_count_down_max = myhome.config['monitor']['leave_home_count_down_max']
         self.scheduler = AsyncIOScheduler()
+        self.presence_job = None
 
     def run(self):
         if myhome.config['monitor']['enabled']:
-            self.scheduler.add_job(self.back_home_cron, 'interval', seconds=myhome.config['monitor']['interval'])
+            self.presence_job = self.scheduler.add_job(
+                self.back_home_cron, 'interval', seconds=myhome.config['monitor']['interval']
+            )
 
         for each_schedule in myhome.config.get('schedule'):
             if not each_schedule['enabled']:
@@ -46,14 +47,11 @@ class Cron:
 
     async def back_home(self):
         if self.presence:
-            # still at home
+            # still at home, reschedule to `leave_home_count_down_max` interval for slower detection
+            self.presence_job.reschedule('interval', seconds=myhome.config['monitor']['leave_home_count_down_max'])
             return
 
-        if self.leave_home_count_down > 0:
-            self.leave_home_count_down = 0
-            return
-
-        self.presence = True
+        # just back home, execute `on_commands`
         for each_schedule in myhome.config['monitor']['on_commands']:
             if not each_schedule['enabled']:
                 continue
@@ -63,6 +61,8 @@ class Cron:
             elif each_schedule['type'] == 'single':
                 await myhome.core.run_single_command(each_schedule['command'])
 
+        self.presence = True
+
         return
 
     async def leave_home(self):
@@ -70,11 +70,7 @@ class Cron:
             # still not at home
             return
 
-        if self.leave_home_count_down < self.leave_home_count_down_max:
-            self.leave_home_count_down += 1
-            return
-
-        self.presence = False
+        # just leave home, execute `off_commands`
         for each_schedule in myhome.config['monitor']['off_commands']:
             if not each_schedule['enabled']:
                 continue
@@ -83,6 +79,10 @@ class Cron:
                 await myhome.core.run_group_command(each_schedule['command'])
             elif each_schedule['type'] == 'single':
                 await myhome.core.run_single_command(each_schedule['command'])
+
+        # reschedule to normal interval
+        self.presence_job.reschedule('interval', seconds=myhome.config['monitor']['interval'])
+        self.presence = False
 
         return
 
