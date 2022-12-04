@@ -45,15 +45,16 @@ class Cron:
             await self.leave_home()
 
     async def back_home(self):
+        if self.leave_home_count_down > 0:
+            self.leave_home_count_down = 0
+            myhome.tgbot.send_message('back_home: reset leave_home_count_down')
+
         if self.presence:
             # still at home
             return
 
-        if self.leave_home_count_down > 0:
-            self.leave_home_count_down = 0
-            return
-
         self.presence = True
+        myhome.tgbot.send_message('back_home: executing back home commands')
         for each_schedule in myhome.config['monitor']['on_commands']:
             if not each_schedule['enabled']:
                 continue
@@ -72,9 +73,11 @@ class Cron:
 
         if self.leave_home_count_down < self.leave_home_count_down_max:
             self.leave_home_count_down += 1
+            myhome.tgbot.send_message(f'leave_home: attempting to leave home, leave_home_count_down: {self.leave_home_count_down}')
             return
 
         self.presence = False
+        myhome.tgbot.send_message('leave_home: executing leave home commands')
         for each_schedule in myhome.config['monitor']['off_commands']:
             if not each_schedule['enabled']:
                 continue
