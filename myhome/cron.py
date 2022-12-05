@@ -52,7 +52,6 @@ class Cron:
     async def back_home(self):
         if self.leave_home_count_down > 0:
             self.leave_home_count_down = 0
-            myhome.logger.info('back_home: reset leave_home_count_down')
 
         if self.presence:
             # still at home
@@ -78,8 +77,6 @@ class Cron:
 
         if self.leave_home_count_down < self.leave_home_count_down_max:
             self.leave_home_count_down += 1
-            myhome.logger.info(
-                f'leave_home: attempting to leave home, leave_home_count_down: {self.leave_home_count_down}')
             return
 
         self.presence = False
