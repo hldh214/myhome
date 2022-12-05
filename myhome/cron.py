@@ -15,7 +15,12 @@ class Cron:
 
     def run(self):
         if myhome.config['monitor']['enabled']:
-            self.scheduler.add_job(self.back_home_cron, 'interval', seconds=myhome.config['monitor']['interval'])
+            self.scheduler.add_job(
+                self.back_home_cron,
+                'cron',
+                hour='8-23',
+                seconds=f'*/{myhome.config["monitor"]["interval"]}',
+            )
 
         for each_schedule in myhome.config.get('schedule'):
             if not each_schedule['enabled']:
@@ -73,7 +78,8 @@ class Cron:
 
         if self.leave_home_count_down < self.leave_home_count_down_max:
             self.leave_home_count_down += 1
-            myhome.logger.info(f'leave_home: attempting to leave home, leave_home_count_down: {self.leave_home_count_down}')
+            myhome.logger.info(
+                f'leave_home: attempting to leave home, leave_home_count_down: {self.leave_home_count_down}')
             return
 
         self.presence = False
