@@ -19,7 +19,7 @@ class Cron:
                 self.back_home_cron,
                 'cron',
                 hour='8-23',
-                seconds=f'*/{myhome.config["monitor"]["interval"]}',
+                second=f'*/{myhome.config["monitor"]["interval"]}',
             )
 
         for each_schedule in myhome.config.get('schedule'):
