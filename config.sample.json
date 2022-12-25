@@ -2,6 +2,7 @@
   "token": "",
   "user_id": 0,
   "chat_id": "",
+  "timezone": "Asia/Tokyo",
   "monitor": {
     "enabled": true,
     "interval": 1,

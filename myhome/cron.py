@@ -11,7 +11,10 @@ class Cron:
         self.presence = True
         self.leave_home_count_down = 0
         self.leave_home_count_down_max = myhome.config['monitor']['leave_home_count_down_max']
-        self.scheduler = AsyncIOScheduler(job_defaults={'misfire_grace_time': 60})
+        self.scheduler = AsyncIOScheduler(
+            job_defaults={'misfire_grace_time': 60}, 
+            timezone=myhome.config.get('timezone', 'Asia/Tokyo')
+        )
 
     def run(self):
         if myhome.config['monitor']['enabled']:
