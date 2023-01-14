@@ -9,6 +9,7 @@ loguru = "==0.6.*"
 apscheduler = "==3.9.*"
 httpx = "==0.23.*"
 ping3 = "==4.0.*"
+paho-mqtt = "*"
 
 [dev-packages]
 frida-tools = "==12.0.*"
