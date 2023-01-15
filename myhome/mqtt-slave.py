@@ -33,10 +33,10 @@ def subscribe(client: mqtt_client):
                 dead += 1
 
         if alive > dead:
-            logger.info(f'Still home')
+            logger.info(f'Still home, alive: {alive}, dead: {dead}')
             return
 
-        logger.info('Leave home, execute leave home commands by mqtt')
+        logger.info(f'Leave home, execute leave home commands by mqtt, alive: {alive}, dead: {dead}')
         _client.publish(callback_topic, '{"status": "absent"}')
 
     client.subscribe(triggered_topic)
