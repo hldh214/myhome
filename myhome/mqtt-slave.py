@@ -22,13 +22,21 @@ def subscribe(client: mqtt_client):
     def on_message(_client, userdata, msg):
         logger.info(f'Received `{msg.payload.decode()}` from `{triggered_topic}` topic, start leave home countdown')
 
+        alive = 0
+        dead = 0
+
         for _ in range(myhome.config['monitor']['leave_home_count_down_max']):
             time.sleep(myhome.config['monitor']['interval'])
             if ping3.ping(myhome.config['monitor']['ip_addr'], timeout=1):
-                logger.info('still home, stop leave home countdown')
-                return
+                alive += 1
+            else:
+                dead += 1
 
-        logger.info('leave home, execute leave home commands by mqtt')
+        if alive > dead:
+            logger.info(f'Still home')
+            return
+
+        logger.info('Leave home, execute leave home commands by mqtt')
         _client.publish(callback_topic, '{"status": "absent"}')
 
     client.subscribe(triggered_topic)
