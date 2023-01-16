@@ -79,9 +79,9 @@ async def main():
                     async for message in messages:
                         logger.info(f'Received `{message.payload.decode()}` from `{message.topic}` topic.')
 
-                        if message.topic.match(pir_triggered_topic):
+                        if message.topic.matches(pir_triggered_topic):
                             await pir_triggered_handler(client, message)
-                        if message.topic.match(air_cleaner_control_topic):
+                        if message.topic.matches(air_cleaner_control_topic):
                             await air_cleaner_control_handler(client, message)
         except asyncio_mqtt.MqttError as error:
             logger.error(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
