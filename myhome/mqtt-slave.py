@@ -86,10 +86,6 @@ async def main():
         except asyncio_mqtt.MqttError as error:
             logger.error(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
             await asyncio.sleep(reconnect_interval)
-        except KeyboardInterrupt:
-            logger.info('Bye!')
-            await opener.aclose()
-            break
 
 
 if __name__ == '__main__':
