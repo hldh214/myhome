@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0564bf8870e18c980d224a0d8ab04abb2ba7c04b4bc3575a46e7385703d89738"
+            "sha256": "254c256c2d87485b4e3a2a9625c6c192f89e4cb3cf194c7a040bb6ad252300a2"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -31,6 +31,14 @@
             ],
             "index": "pypi",
             "version": "==3.9.1.post1"
+        },
+        "asyncio-mqtt": {
+            "hashes": [
+                "sha256:38416481bb7cc9613c6a1a8e58b8f9f9c9a522d93411003e8000e74ef2b7ed85",
+                "sha256:ef12c1d0250ffd65b70085d66c457128ed6aa98b3d821d2316213fb9d1957d5b"
+            ],
+            "index": "pypi",
+            "version": "==0.16.1"
         },
         "certifi": {
             "hashes": [
@@ -92,7 +100,6 @@
             "hashes": [
                 "sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f"
             ],
-            "index": "pypi",
             "version": "==1.6.1"
         },
         "ping3": {
@@ -242,10 +249,9 @@
         },
         "wcwidth": {
             "hashes": [
-                "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784",
-                "sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83"
+                "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"
             ],
-            "version": "==0.2.5"
+            "version": "==0.2.6"
         }
     }
 }
