@@ -13,7 +13,7 @@ password = 'well-known'
 
 pir_triggered_topic = 'me/motion_sensor'
 leave_home_callback_topic = 'me/leave_home'
-air_cleaner_control_topic = 'air_cleaner/control'
+air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 
 pd_task = None
 opener = httpx.AsyncClient()
