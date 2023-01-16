@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 import httpx
 import ping3
@@ -52,8 +51,6 @@ async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
 
 
 async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
-    payload = json.loads(message.payload.decode())
-
     json_data = {
         "deviceToken": myhome.config['monitor']['cocoro']['device_token'],
         "additional_reqest": True,
@@ -61,9 +58,9 @@ async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
         "event_key": "echonet_control",
     }
 
-    if payload.get('operation') == 'on':
+    if message.payload.decode() == 'ON':
         json_data.update({"data": [{"epc": "0x80", "edt": "0x30"}, {"opc": "k3", "odt": {"s6": "FF"}}]})
-    elif payload.get('operation') == 'off':
+    elif message.payload.decode() == 'OFF':
         json_data.update({"data": [{"epc": "0x80", "edt": "0x31"}, {"opc": "k3", "odt": {"s6": "00"}}]})
 
     res = await opener.post('https://cocoroplusapp.jp.sharp/v1/cocoro-air/sync/air-cleaner', json=json_data)
