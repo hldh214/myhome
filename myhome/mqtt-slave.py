@@ -1,5 +1,7 @@
 import asyncio
+import json
 
+import httpx
 import ping3
 import asyncio_mqtt
 
@@ -10,10 +12,15 @@ hostname = myhome.config['monitor']['mqtt_broker']
 username = 'well-known'
 password = 'well-known'
 
-triggered_topic = 'me/motion_sensor'
-callback_topic = 'me/leave_home'
+pir_triggered_topic = 'me/motion_sensor'
+leave_home_callback_topic = 'me/leave_home'
+air_cleaner_control_topic = 'air_cleaner/control'
 
 pd_task = None
+opener = httpx.AsyncClient()
+opener.headers.update({
+    'cookie': myhome.config['monitor']['cocoro']['cookie'],
+})
 
 
 async def presence_detection(client: asyncio_mqtt.Client):
@@ -32,7 +39,36 @@ async def presence_detection(client: asyncio_mqtt.Client):
         return
 
     logger.info(f'Leave home, execute leave home commands by mqtt, alive: {alive}, dead: {dead}')
-    await client.publish(callback_topic, '{"status": "absent"}')
+    await client.publish(leave_home_callback_topic, '{"status": "absent"}')
+
+
+async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
+    global pd_task
+    if pd_task is not None and not pd_task.done():
+        logger.warning('Cancel previous task due to new message received.')
+        pd_task.cancel()
+
+    pd_task = asyncio.create_task(presence_detection(client))
+
+
+async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
+    payload = json.loads(message.payload.decode())
+
+    json_data = {
+        "deviceToken": myhome.config['monitor']['cocoro']['device_token'],
+        "additional_reqest": True,
+        "model_name": myhome.config['monitor']['cocoro']['model_name'],
+        "event_key": "echonet_control",
+    }
+
+    if payload.get('operation') == 'on':
+        json_data.update({"data": [{"epc": "0x80", "edt": "0x30"}, {"opc": "k3", "odt": {"s6": "FF"}}]})
+    elif payload.get('operation') == 'off':
+        json_data.update({"data": [{"epc": "0x80", "edt": "0x31"}, {"opc": "k3", "odt": {"s6": "00"}}]})
+
+    res = await opener.post('https://cocoroplusapp.jp.sharp/v1/cocoro-air/sync/air-cleaner', json=json_data)
+
+    logger.info(f'Air cleaner control result: {res.status_code}, {res.text}')
 
 
 async def main():
@@ -42,19 +78,21 @@ async def main():
         try:
             async with asyncio_mqtt.Client(hostname=hostname, username=username, password=password) as client:
                 async with client.messages() as messages:
-                    await client.subscribe(triggered_topic)
+                    await client.subscribe('#')
                     async for message in messages:
-                        logger.info(f'Received `{message.payload.decode()}` from `{triggered_topic}` topic.')
+                        logger.info(f'Received `{message.payload.decode()}` from `{message.topic}` topic.')
 
-                        global pd_task
-                        if pd_task is not None and not pd_task.done():
-                            logger.warning('Cancel previous task due to new message received.')
-                            pd_task.cancel()
-
-                        pd_task = asyncio.create_task(presence_detection(client))
+                        if message.topic.match(pir_triggered_topic):
+                            await pir_triggered_handler(client, message)
+                        if message.topic.match(air_cleaner_control_topic):
+                            await air_cleaner_control_handler(client, message)
         except asyncio_mqtt.MqttError as error:
             logger.error(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
             await asyncio.sleep(reconnect_interval)
+        except KeyboardInterrupt:
+            logger.info('Bye!')
+            await opener.aclose()
+            break
 
 
 if __name__ == '__main__':

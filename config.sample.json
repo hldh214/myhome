@@ -9,6 +9,11 @@
     "leave_home_count_down_max": 15,
     "ip_addr": "192.168.10.89",
     "mqtt_broker": "192.168.10.100",
+    "cocoro": {
+      "cookie": "jsessionid=",
+      "device_token": "",
+      "model_name": "KIPX70"
+    },
     "on_commands": [
       {
         "name": "Turn on all",
