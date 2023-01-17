@@ -248,10 +248,10 @@ async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
 async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
     if message.payload.decode() == 'ON':
         if cocoro.device_control('switch', 'on'):
-            await client.publish(air_cleaner_state_topic, 'ON')
+            await client.publish(air_cleaner_state_topic, 'ON', retain=True)
     elif message.payload.decode() == 'OFF':
         if cocoro.device_control('switch', 'off'):
-            await client.publish(air_cleaner_state_topic, 'OFF')
+            await client.publish(air_cleaner_state_topic, 'OFF', retain=True)
 
 
 async def main():
