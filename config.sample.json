@@ -10,9 +10,8 @@
     "ip_addr": "192.168.10.89",
     "mqtt_broker": "192.168.10.100",
     "cocoro": {
-      "cookie": "jsessionid=",
-      "device_token": "",
-      "model_name": "KIPX70"
+      "app_secret": "",
+      "terminal_app_id_key": ""
     },
     "on_commands": [
       {
