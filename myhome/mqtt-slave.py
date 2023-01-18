@@ -12,7 +12,7 @@ username = 'well-known'
 password = 'well-known'
 
 pir_triggered_topic = 'me/motion_sensor'
-leave_home_callback_topic = 'me/leave_home'
+my_tracker_topic = 'location/me'
 air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 air_cleaner_state_topic = 'home/bedroom/air_cleaner'
 
@@ -202,6 +202,9 @@ cocoro = Cocoro(
 
 
 async def presence_detection(client: asyncio_mqtt.Client):
+    # first assume that we are at home
+    await client.publish(my_tracker_topic, 'home', retain=True)
+
     alive = 0
     dead = 0
 
@@ -217,7 +220,7 @@ async def presence_detection(client: asyncio_mqtt.Client):
         return
 
     logger.info(f'Leave home, execute leave home commands by mqtt, alive: {alive}, dead: {dead}')
-    await client.publish(leave_home_callback_topic, '{"status": "absent"}')
+    await client.publish(my_tracker_topic, 'not_home', retain=True)
 
 
 # noinspection PyUnusedLocal
