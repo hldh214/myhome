@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 import httpx
 import ping3
@@ -21,7 +20,7 @@ pd_task = None
 
 
 # Credit: https://github.com/rcmdnk/cocoro
-class Cocoro():
+class Cocoro:
     def __init__(self, app_secret, terminal_app_id_key, _logger):
         self.app_secret = app_secret
         self.terminal_app_id_key = terminal_app_id_key
@@ -30,17 +29,16 @@ class Cocoro():
         self.config = {'name': None}
 
         self.url_prefix = 'https://hms.cloudlabs.sharp.co.jp/hems/pfApi/ta'
-        self.headers = {
+        self.opener = httpx.Client()
+        self.opener.headers.update({
             'Content-Type': 'application/json; charset=utf-8',
             'Accept': '*/*',
-            'User-Agent': 'smartlink_v200i Mozilla/5.0 '
-                          '(iPhone; CPU iPhone OS 14_4 like Mac OS X) '
-                          'AppleWebKit/605.1.15 (KHTML, like Gecko) '
-                          'Mobile/15E148',
+            'User-Agent': 'smartlink_v200i Mozilla/5.0  (iPhone; CPU iPhone OS 14_4 like Mac OS X) '
+                          'AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
             'Accept-Language': 'ja-jp',
             'Connection': 'keep-alive',
             'Proxy-Connection': 'keep-alive',
-        }
+        })
 
         self.control = {
             'switch': {
@@ -83,37 +81,35 @@ class Cocoro():
                     None,
                     '010100004000000000000000000000000000000000000000000000')}}
 
-    def get_headers(self, **kw):
-        headers = self.headers.copy()
-        for k, v in kw.items():
-            headers[k] = v
-        return headers
-
-    def get_cookies(self):
-        if 'cookies' in self.config:
-            return self.config['cookies']
+    def login(self):
         url = self.url_prefix + '/setting/login/'
-        headers = self.get_headers()
         params = (
             ('appSecret', self.app_secret),
             ('serviceName', 'iClub'),
         )
         data = {'terminalAppId': f'https://db.cloudlabs.sharp.co.jp/clpf/key/{self.terminal_app_id_key}'}
-        data = json.dumps(data).replace('/', '\\/')
-        response = httpx.post(url, headers=headers, params=params, data=data)
-        if response.status_code != 200 or 'JSESSIONID' not in response.cookies:
-            self.logger.error('Failed to get cookie')
+        response = self.opener.post(url, params=params, json=data)
+        assert response.status_code == 200
+
+    def request(self, **kwargs):
+        res = self.opener.request(**kwargs)
+
+        if res.status_code == 401:
+            self.logger.info('Unauthorized. Try to login again.')
+            self.login()
+            res = self.opener.request(**kwargs)
+
+        if res.status_code != 200:
+            self.logger.error(f'Failed to {kwargs["method"]}: {kwargs["url"]}, {res.status_code}, {res.text}')
             return False
-        self.config['cookies'] = {'JSESSIONID': response.cookies['JSESSIONID']}
-        return self.config['cookies']
+
+        return res
 
     def get_box_par(self):
         for box in self.config['box']:
             for echonetData in box['echonetData']:
                 name = echonetData['labelData']['name'].strip('"\'')
-                if (self.config['name'] is None
-                    or name
-                    == self.config['name']):
+                if self.config['name'] is None or name == self.config['name']:
                     self.config['boxId'] = box['boxId']
                     self.config['echonetData'] = echonetData
                     self.config['name'] = name
@@ -133,16 +129,11 @@ class Cocoro():
         if 'box' in self.config:
             return True
         url = self.url_prefix + '/setting/boxInfo/'
-        headers = self.get_headers()
-        cookies = self.get_cookies()
-        if not cookies:
-            return False
         params = (
             ('appSecret', self.app_secret),
             ('mode', 'other'),
         )
-        response = httpx.get(url, headers=headers, params=params,
-                             cookies=cookies)
+        response = self.request(method='GET', url=url, params=params)
         if response.status_code != 200:
             self.logger.error('Failed to get box information')
             return False
@@ -155,10 +146,6 @@ class Cocoro():
         if not self.get_box():
             return False
         url = self.url_prefix + '/control/deviceControl'
-        headers = self.get_headers(**{'Connection': 'close', 'Proxy-Connection': 'close'})
-        cookies = self.get_cookies()
-        if not cookies:
-            return False
         params = (
             ('appSecret', self.app_secret),
             ('boxId', self.config['boxId']),
@@ -176,15 +163,12 @@ class Cocoro():
             }]
         }
         if self.control[system][target][0] is not None:
-            data['controlList'][0]['status'].append(
-                {
-                    'valueSingle': {'code': self.control[system][target][0]},
-                    'statusCode': '80',
-                    'valueType': 'valueSingle'
-                })
-        data = json.dumps(data)
-        response = httpx.post(url, headers=headers, params=params,
-                              cookies=cookies, data=data)
+            data['controlList'][0]['status'].append({
+                'valueSingle': {'code': self.control[system][target][0]},
+                'statusCode': '80',
+                'valueType': 'valueSingle'
+            })
+        response = self.request(method='POST', url=url, params=params, json=data)
         if response.status_code != 200:
             self.logger.error(f'Failed to control {self.config["name"]}: '
                               f'{system} {target}. '
@@ -236,6 +220,7 @@ async def presence_detection(client: asyncio_mqtt.Client):
     await client.publish(leave_home_callback_topic, '{"status": "absent"}')
 
 
+# noinspection PyUnusedLocal
 async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
     global pd_task
     if pd_task is not None and not pd_task.done():
