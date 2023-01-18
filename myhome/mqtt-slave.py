@@ -12,7 +12,7 @@ username = 'well-known'
 password = 'well-known'
 
 pir_triggered_topic = 'me/motion_sensor'
-my_tracker_topic = 'location/me'
+my_tracker_topic = 'location/xperia_1_iii'
 air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 air_cleaner_state_topic = 'home/bedroom/air_cleaner'
 
