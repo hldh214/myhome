@@ -11,10 +11,14 @@ hostname = myhome.config['monitor']['mqtt_broker']
 username = 'well-known'
 password = 'well-known'
 
-pir_triggered_topic = 'me/motion_sensor'
 my_tracker_topic = 'location/xperia_1_iii'
 air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 air_cleaner_state_topic = 'home/bedroom/air_cleaner'
+
+PAYLOAD_HOME = 'home'
+PAYLOAD_NOT_HOME = 'not_home'
+PAYLOAD_ON = 'ON'
+PAYLOAD_OFF = 'OFF'
 
 pd_task = None
 
@@ -202,9 +206,6 @@ cocoro = Cocoro(
 
 
 async def presence_detection(client: asyncio_mqtt.Client):
-    # first assume that we are at home
-    await client.publish(my_tracker_topic, 'home', retain=True)
-
     alive = 0
     dead = 0
 
@@ -220,11 +221,14 @@ async def presence_detection(client: asyncio_mqtt.Client):
         return
 
     logger.info(f'Leave home, execute leave home commands by mqtt, alive: {alive}, dead: {dead}')
-    await client.publish(my_tracker_topic, 'not_home', retain=True)
+    await client.publish(my_tracker_topic, PAYLOAD_NOT_HOME, retain=True)
 
 
-# noinspection PyUnusedLocal
-async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
+async def my_tracker_handler(client: asyncio_mqtt.Client, message):
+    if message.payload.decode() != PAYLOAD_HOME:
+        # prevent recursive call since we only need to detect when the sensor was triggered (payload: PAYLOAD_HOME)
+        return
+
     global pd_task
     if pd_task is not None and not pd_task.done():
         logger.warning('Cancel previous task due to new message received.')
@@ -234,12 +238,12 @@ async def pir_triggered_handler(client: asyncio_mqtt.Client, message):
 
 
 async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
-    if message.payload.decode() == 'ON':
+    if message.payload.decode() == PAYLOAD_ON:
         if cocoro.device_control('switch', 'on'):
-            await client.publish(air_cleaner_state_topic, 'ON', retain=True)
-    elif message.payload.decode() == 'OFF':
+            await client.publish(air_cleaner_state_topic, PAYLOAD_ON, retain=True)
+    elif message.payload.decode() == PAYLOAD_OFF:
         if cocoro.device_control('switch', 'off'):
-            await client.publish(air_cleaner_state_topic, 'OFF', retain=True)
+            await client.publish(air_cleaner_state_topic, PAYLOAD_OFF, retain=True)
 
 
 async def main():
@@ -253,8 +257,8 @@ async def main():
                     async for message in messages:
                         logger.info(f'Received `{message.payload.decode()}` from `{message.topic}` topic.')
 
-                        if message.topic.matches(pir_triggered_topic):
-                            await pir_triggered_handler(client, message)
+                        if message.topic.matches(my_tracker_topic):
+                            await my_tracker_handler(client, message)
                         if message.topic.matches(air_cleaner_control_topic):
                             await air_cleaner_control_handler(client, message)
         except asyncio_mqtt.MqttError as error:
