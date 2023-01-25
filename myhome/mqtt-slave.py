@@ -14,6 +14,7 @@ password = 'well-known'
 my_tracker_topic = 'location/xperia_1_iii'
 air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 air_cleaner_state_topic = 'home/bedroom/air_cleaner'
+bedroom_pir_topic = 'home/bedroom/pir'
 
 PAYLOAD_HOME = 'home'
 PAYLOAD_NOT_HOME = 'not_home'
@@ -230,11 +231,18 @@ async def my_tracker_handler(client: asyncio_mqtt.Client, message):
         return
 
     global pd_task
-    if pd_task is not None and not pd_task.done():
+    if isinstance(pd_task, asyncio.Task) and not pd_task.done():
         logger.warning('Cancel previous task due to new message received.')
         pd_task.cancel()
 
     pd_task = asyncio.create_task(presence_detection(client))
+
+
+async def bedroom_pir_handler(_client: asyncio_mqtt.Client, _message):
+    global pd_task
+    if isinstance(pd_task, asyncio.Task) and not pd_task.done():
+        logger.info('Stop presence detection task due to bedroom PIR triggered.')
+        pd_task.cancel()
 
 
 async def air_cleaner_control_handler(client: asyncio_mqtt.Client, message):
@@ -261,6 +269,8 @@ async def main():
                             await my_tracker_handler(client, message)
                         if message.topic.matches(air_cleaner_control_topic):
                             await air_cleaner_control_handler(client, message)
+                        if message.topic.matches(bedroom_pir_topic):
+                            await bedroom_pir_handler(client, message)
         except asyncio_mqtt.MqttError as error:
             logger.error(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
             await asyncio.sleep(reconnect_interval)
