@@ -1,0 +1,77 @@
+{#temperature: 25.5#}
+{#temperature_unit: °C#}
+{#humidity: 62#}
+{#pressure: 1015#}
+{#pressure_unit: hPa#}
+{#wind_bearing: 68#}
+{#wind_speed: 8#}
+{#wind_speed_unit: km/h#}
+{#visibility: 17.7#}
+{#visibility_unit: km#}
+{#precipitation_unit: mm#}
+{#forecast:#}
+{#- datetime: '2023-05-31T22:00:00+00:00'#}
+{#precipitation_probability: 54#}
+{#wind_bearing: 178#}
+{#condition: partlycloudy#}
+{#temperature: 23.9#}
+{#templow: 18.9#}
+{#wind_speed: 20.4#}
+{#precipitation: 17.9#}
+{#- datetime: '2023-06-01T22:00:00+00:00'#}
+{#precipitation_probability: 94#}
+{#wind_bearing: 200#}
+{#condition: pouring#}
+{#temperature: 23.2#}
+{#templow: 18.2#}
+{#wind_speed: 35.2#}
+{#precipitation: 65.9#}
+{#- datetime: '2023-06-02T22:00:00+00:00'#}
+{#precipitation_probability: 68#}
+{#wind_bearing: 176#}
+{#condition: rainy#}
+{#temperature: 21.1#}
+{#templow: 17.2#}
+{#wind_speed: 20.4#}
+{#precipitation: 3.6#}
+{#- datetime: '2023-06-03T22:00:00+00:00'#}
+{#precipitation_probability: 61#}
+{#wind_bearing: 102#}
+{#condition: cloudy#}
+{#temperature: 25.1#}
+{#templow: 18.2#}
+{#wind_speed: 14.8#}
+{#precipitation: 1.9#}
+{#- datetime: '2023-06-04T22:00:00+00:00'#}
+{#precipitation_probability: 14#}
+{#wind_bearing: 89#}
+{#condition: partlycloudy#}
+{#temperature: 26.6#}
+{#templow: 18.4#}
+{#wind_speed: 18.5#}
+{#precipitation: 0#}
+{#attribution: Data provided by AccuWeather#}
+{#friendly_name: gsyk#}
+
+{## Imitate available variables: ##}
+{% set entity_id = 'weather.gsyk' %}
+{% set tu = state_attr(entity_id, 'temperature_unit') %}
+
+The #weather is #{{ states(entity_id) }}.
+
+The temperature is {{ state_attr(entity_id, 'temperature') }} {{ tu }}.
+
+The humidity is {{ state_attr(entity_id, 'humidity') }} %.
+
+The pressure is {{ state_attr(entity_id, 'pressure') }} {{ state_attr(entity_id, 'pressure_unit') }}.
+
+The wind speed is {{ state_attr(entity_id, 'wind_speed') }} {{ state_attr(entity_id, 'wind_speed_unit') }}.
+
+The visibility is {{ state_attr(entity_id, 'visibility') }} {{ state_attr(entity_id, 'visibility_unit') }}.
+
+
+{% for forecast in state_attr(entity_id, 'forecast') -%}
+    The forecast for *{{ as_timestamp(forecast.datetime) | timestamp_custom('%b %d %Y') }}* is `{{ forecast.condition }}`.
+    With a high of *{{ forecast.temperature }} {{ tu }}* and a low of *{{ forecast.templow }} {{ tu }}*.
+    The chance of precipitation is `{{ forecast.precipitation_probability }} %`.
+{% endfor %}
