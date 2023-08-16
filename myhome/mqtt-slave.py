@@ -264,8 +264,9 @@ async def main():
     while True:
         try:
             async with asyncio_mqtt.Client(hostname=hostname) as client:
+                [await client.subscribe(topic) for topic in subscribe_topics]
+
                 async with client.messages() as messages:
-                    [await client.subscribe(topic) for topic in subscribe_topics]
                     async for message in messages:
                         logger.info(f'Received `{message.payload.decode()}` from `{message.topic}` topic.')
 
