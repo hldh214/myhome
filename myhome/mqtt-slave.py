@@ -8,13 +8,17 @@ import myhome
 from myhome import logger
 
 hostname = myhome.config['monitor']['mqtt_broker']
-username = 'well-known'
-password = 'well-known'
 
 my_tracker_topic = 'location/xperia_1_iii'
 air_cleaner_control_topic = 'home/bedroom/air_cleaner/set'
 air_cleaner_state_topic = 'home/bedroom/air_cleaner'
 bedroom_pir_topic = 'home/bedroom/pir'
+
+subscribe_topics = [
+    my_tracker_topic,
+    air_cleaner_control_topic,
+    bedroom_pir_topic
+]
 
 PAYLOAD_HOME = 'home'
 PAYLOAD_NOT_HOME = 'not_home'
@@ -259,9 +263,9 @@ async def main():
 
     while True:
         try:
-            async with asyncio_mqtt.Client(hostname=hostname, username=username, password=password) as client:
+            async with asyncio_mqtt.Client(hostname=hostname) as client:
                 async with client.messages() as messages:
-                    await client.subscribe('#')
+                    await client.subscribe(subscribe_topics)
                     async for message in messages:
                         logger.info(f'Received `{message.payload.decode()}` from `{message.topic}` topic.')
 
