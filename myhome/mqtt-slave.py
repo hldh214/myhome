@@ -186,7 +186,8 @@ class Cocoro:
         data = response.json()
         if data['controlList'][0]['errorCode'] is not None:
             self.logger.error(f'Failed to control: {self.config["name"]} '
-                              f'{system} {target}')
+                              f'{system} {target}. '
+                              f'Response: {data}')
             return False
         return True
 
